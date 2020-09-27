@@ -1,0 +1,52 @@
+#!/bin/sh
+#------------------------------------------------------------------------------
+# =========                 |
+# \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+#  \\    /   O peration     |
+#   \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+#    \\/     M anipulation  |
+#-------------------------------------------------------------------------------
+# License
+#     This file is part of OpenFOAM.
+#
+#     OpenFOAM is free software: you can redistribute it and/or modify it
+#     under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+#
+#     OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+#     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+#     for more details.
+#
+#     You should have received a copy of the GNU General Public License
+#     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Script
+#     extractData
+#
+# Description
+#     Extracts motion data from a simple harmonic motion dynamicMesh case
+#
+#------------------------------------------------------------------------------
+
+grep "Centre of mass" $1 | cut -d ":" -f 2 | cut -d " " -f 2 | tr -d "(" > cmX # Centre of mass X coordinate
+grep "Centre of mass" $1 | cut -d ":" -f 2 | cut -d " " -f 3             > cmY # Centre of mass Y coordinate  
+grep "Centre of mass" $1 | cut -d ":" -f 2 | cut -d " " -f 4 | tr -d ")" > cmZ # Centre of mass Z coordinate  
+
+grep "Linear velocity" $1 | cut -d ":" -f 2 | cut -d " " -f 2 | tr -d "(" > lvX # Linear velocity X direction
+grep "Linear velocity" $1 | cut -d ":" -f 2 | cut -d " " -f 3             > lvY # Linear velocity Y direction 
+grep "Linear velocity" $1 | cut -d ":" -f 2 | cut -d " " -f 4 | tr -d ")" > lvZ # Linear velocity Z direction 
+
+grep "Angular velocity" $1 | cut -d ":" -f 2 | cut -d " " -f 2 | tr -d "(" > avX # Angular velocity X direction
+grep "Angular velocity" $1 | cut -d ":" -f 2 | cut -d " " -f 3 		   > avY # Angular velocity Y direction 
+grep "Angular velocity" $1 | cut -d ":" -f 2 | cut -d " " -f 4 | tr -d ")" > avZ # Angular velocity Z direction 
+
+grep -e "^Time = " $1 | cut -d " " -f 3 > times # Time vector
+
+paste times cmX cmY cmZ lvX lvY lvZ avX avY avZ > postProcessing/position.dat # Join data
+sed -i '1i#1-Time  #2-CMX   #3-CMY  #4-CMZ  $5-VX  #6-VY  #7-VZ  #8-wX   #9-wY   #10-wZ' postProcessing/position.dat # Header (title)
+
+rm cmX cmY cmZ lvX lvY lvZ avX avY avZ times # Remove files
+
+#------------------------------------------------------------------------------
